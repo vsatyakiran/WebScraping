@@ -1,0 +1,113 @@
+import requests
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+}
+
+from bs4 import BeautifulSoup 
+company_name = []
+company_based = []
+headquartered = []
+age = []
+no_employees = []
+rating  = []
+salaries_links = []
+
+values = []
+
+def pages(n):
+    url = 'http://www.ambitionbox.com/list-of-companies?campaign=desktop_nav&page={}'.format(n)
+    html_doc = requests.get(url, headers=headers).text
+    soup = BeautifulSoup(html_doc, 'html.parser')
+    for div in soup.find_all('div', class_='companyCardWrapper'):
+        info = div.find('span', class_='companyCardWrapper__interLinking').text.strip().split('|')
+        values.append(info)
+        if len(info)>3:
+            salaries_links.append(div.find_all('a', class_='companyCardWrapper__ActionWrapper')[1]['href'])
+            rating.append(div.find('span', class_='companyCardWrapper__companyRatingValue').text.strip())
+            company_name.append(div.find('h2', class_='companyCardWrapper__companyName').text.strip())     
+            company_based.append(info[0])
+            no_employees.append(info[1])
+            age.append(info[-2].split()[0])
+            headquartered.append(info[-1].split()[0])
+
+pages(1)
+# for i in range(1, 30):
+#     pages(i)
+
+len(salaries_links), len(company_name), len(rating), len(company_based), len(no_employees), len(age), len(headquartered)
+
+designation = []
+experience = []
+salary = []
+salary_range = []
+
+
+def sub_pages():
+    for link in salaries_links:
+        html_salary = requests.get(link, headers=headers).text
+        salary_soup = BeautifulSoup(html_salary, 'html.parser')
+
+        table = salary_soup.find('table', class_='jobProfiles-table')
+        left_content = table.find_all('td', class_='left-content')
+        right_content = table.find_all('td', class_='right-content')
+
+        for left in table.find_all('td', class_='left-content'):
+            designation.append(left.find('p', class_='card-content__company').text.strip()) 
+            exp_ = left.find('div', class_='content-wrapper').find('span').text
+            exp1 = exp_.replace('\xa0', '').replace('\n', '').replace('\t', '').replace('Experience:', '').strip()
+            experience.append(exp1)
+        for right in right_content:
+            salary.append(right.find('div', class_ = 'avg-salary').find('div').text.replace('\n', '').replace('\t', ''))
+            salary_range.append(right.find('div', class_ = 'avg-salary').find('p', class_='salary-range').text.strip())
+
+sub_pages()
+
+len(salary_range), len(salary), len(designation), len(experience)
+
+v = {
+    'salary_range':salary_range,
+    'salary':salary,
+    'designation':designation,
+    'experience':experience
+}
+
+
+import pandas as pd
+pd.DataFrame(v).to_csv('links.csv')
+
+table = salary_soup.find('table', class_='jobProfiles-table')
+left_content = table.find_all('td', class_='left-content')
+right_content = table.find_all('td', class_='right-content')
+
+exp_ = left_content[0].find('div', class_='content-wrapper').find('span').text
+exp1 = exp.replace('\xa0', '').replace('\n', '').replace('\t', '').replace('Experience:', '').strip()
+exp1
+
+for link in salaries_links:
+    html_salary = requests.get(link, headers=headers).text
+    salary_soup = BeautifulSoup(html_salary, 'html.parser')
+    
+    table = salary_soup.find('table', class_='jobProfiles-table')
+    left_content = table.find_all('td', class_='left-content')
+    right_content = table.find_all('td', class_='right-content')
+    
+    for left in table.find_all('td', class_='left-content'):
+        designation.append(left.find('p', class_='card-content__company').text.strip()) 
+        exp_ = left.find('div', class_='content-wrapper').find('span').text
+        exp1 = exp_.replace('\xa0', '').replace('\n', '').replace('\t', '').replace('Experience:', '').strip()
+        experience.append(exp1)
+    for right in right_content:
+        salary.append(right.find('div', class_ = 'avg-salary').find('div').text.replace('\n', '').replace('\t', ''))
+        salary_range.append(right.find('div', class_ = 'avg-salary').find('p', class_='salary-range').text.strip())
+
+for left in table.find_all('td', class_='left-content'):
+    designation.append(left.find('p', class_='card-content__company').text.strip()) 
+    exp_ = left.find('div', class_='content-wrapper').find('span').text
+    exp1 = exp_.replace('\xa0', '').replace('\n', '').replace('\t', '').replace('Experience:', '').strip()
+    experience.append(exp1)
+
+for right in right_content:
+    salary.append(right.find('div', class_ = 'avg-salary').find('div').text.replace('\n', '').replace('\t', ''))
+    salary_range.append(right.find('div', class_ = 'avg-salary').find('p', class_='salary-range').text.strip())
+
